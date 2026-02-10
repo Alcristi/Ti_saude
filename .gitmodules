@@ -1,0 +1,6 @@
+[submodule "ti_saude"]
+	path = ti_saude
+	url = git@github.com:Alcristi/Saude.git
+[submodule "ti-saude-front"]
+	path = ti-saude-front
+	url = git@github.com:Alcristi/saude-ui.git

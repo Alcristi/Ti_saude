@@ -1,0 +1,70 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: hospital_postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: hospital_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - hospital_net
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: hospital_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - hospital_net
+
+  backend:
+    build:
+      context: ./ti_saude
+      dockerfile: Dockerfile
+    container_name: hospital_backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://admin:password123@db:5432/hospital_db?schema=public
+      JWT_SECRET: supersecretkey
+      PORT: 3000
+
+    depends_on:
+      - db
+    networks:
+      - hospital_net
+
+  frontend:
+    build:
+      context: ./ti-saude-front
+      dockerfile: Dockerfile
+      args:
+        API_URL: http://localhost:3000
+    container_name: hospital_frontend
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - hospital_net
+
+volumes:
+  postgres_data:
+
+
+networks:
+  hospital_net:
+    driver: bridge
